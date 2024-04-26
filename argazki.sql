@@ -1,4 +1,4 @@
-create table Argazki;
+create database Argazki;
 create table Argazkiak ( 
  idArgazki integer,
  izenburua varchar(50),
