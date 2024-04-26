@@ -78,6 +78,44 @@ public class Photography extends JFrame {
         });
         irudiaLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
+                String url = "jdbc:mysql://localhost/Argazki";
+                String erab = "root";
+                String pasahitza = "zubiri";
+                try {
+                    Connection conn = DriverManager.getConnection(url, erab, pasahitza);
+                    String sql = "SELECT bistaratzeKop FROM argazkiak WHERE idArgazki = ?;";
+                    PreparedStatement kontsulta = conn.prepareStatement(sql);
+                    int id;
+                    if (irudiaLabel.getIcon().equals("./irudiak/ansealdams1.jpg")){
+                        kontsulta.setString(1,"1");
+                        id=1;
+                    }
+                    else if (irudiaLabel.getIcon().equals("./irudiak/ansealdams2.jpg")){
+                        kontsulta.setString(1,"2");
+                        id=2;
+                    } else if (irudiaLabel.getIcon().equals("./irudiak/rothko1.jpg")){
+                        kontsulta.setString(1,"3");
+                        id=3;
+                    } else if (irudiaLabel.getIcon().equals("./irudiak/vangogh1.jpg")){
+                        kontsulta.setString(1,"4");
+                        id=4;
+                    } else {
+                        kontsulta.setString(1,"5");
+                        id=5;
+                    }
+                    ResultSet rs = kontsulta.executeQuery();
+                    if (rs.next()) {
+                        int bisKop = rs.getInt("bistaratzeKop");
+                        inkrementatuBistaratzeak(new Argazki(id, bisKop));
+                    } else {
+                        System.out.println("Ez da aurkitu emaitzarik");
+                    }
+                    conn.close();
+                } catch (SQLException m) {
+                    System.out.println("Konektatzerakoan errorea: " + m.getMessage());
+                }
+
+
 
             }
         });
@@ -89,7 +127,7 @@ public class Photography extends JFrame {
 
     public void argazkiakLortu(String selectedPhotographer) {
         listModel.clear();
-        String url = "jdbc:mysql://localhost/Mugarri4";
+        String url = "jdbc:mysql://localhost/Argazki";
         String erab = "root";
         String pasahitza = "zubiri";
         try {
@@ -125,6 +163,21 @@ public class Photography extends JFrame {
 
     }
     public void inkrementatuBistaratzeak(Argazki a){
-        a.bistaratzeKop++;
+        String url = "jdbc:mysql://localhost/Argazki";
+        String erab = "root";
+        String pasahitza = "zubiri";
+        try {
+            Connection conn = DriverManager.getConnection(url, erab, pasahitza);
+            String sql = "UPDATE argazkiak set bistaratzeKop = ? where idArgazkilari = ?;";
+            PreparedStatement kontsulta = conn.prepareStatement(sql);
+            int bistKop = a.bistaratzeKop+1;
+            kontsulta.setString(2,String.valueOf(a.idArgazki));
+            kontsulta.setString(1,String.valueOf(bistKop));
+            kontsulta.executeUpdate();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Konektatzerakoan erroreaasdasd: " + e.getMessage());
+        }
     }
 }
