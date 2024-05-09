@@ -12,11 +12,12 @@ import java.io.File;
 import javax.swing.ImageIcon;
 
 public class Photography extends JFrame {
-    DefaultListModel<String> listModel;
-    Argazki[] nireArgObj = new Argazki[5];
+    ArrayList<Argazki> argazkis;
+    Argazkilari[] argazkilaris;
     JLabel irudiaLabel;
     ImageIcon irudi;
     ImageIcon icon;
+    DefaultListModel<Argazki> listModel;
 
     private DatuBaseKudeatzailea datuBaseKudeatzailea;
 
@@ -31,7 +32,7 @@ public class Photography extends JFrame {
         add(panel1);
         JLabel photographer = new JLabel("Photographer");
         panel1.add(photographer);
-        Argazkilari[] argazkilaris = datuBaseKudeatzailea.argazkilariakLortu();
+        argazkilaris = datuBaseKudeatzailea.argazkilariakLortu();
         JComboBox photographerBox = new JComboBox<>(argazkilaris);
         panel1.add(photographerBox);
         photographerBox.setPreferredSize(new Dimension(120, 30));
@@ -47,11 +48,17 @@ public class Photography extends JFrame {
 
         JPanel panel3 = new JPanel();
         add(panel3);
-
-
+        Argazkilari argazkilariMomentukoa = (Argazkilari) photographerBox.getSelectedItem();
+        argazkis = datuBaseKudeatzailea.argazkiakLortu();
         listModel = new DefaultListModel<>();
-        argazkiakLortu("ansealdams");
-        JList<String> jList = new JList<>(listModel);
+        for (Argazki argazki : argazkis) {
+            assert argazkilariMomentukoa != null;
+            if(argazki.getIdArgazkilari() == argazkilariMomentukoa.getIdArgazkilari()){
+
+                listModel.addElement(argazki);
+            }
+        }
+        JList<Argazki> jList = new JList<>(listModel);
         JScrollPane scrollPane = new JScrollPane(jList);
         panel3.add(scrollPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -70,13 +77,22 @@ public class Photography extends JFrame {
         setVisible(true);
         photographerBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                argazkiakLortu(photographerBox.getSelectedItem().toString());
+
+                listModel.clear();
+                Argazkilari argazkilariMomentukoa = (Argazkilari) photographerBox.getSelectedItem();
+                Date selectedDate = datePicker.getDate();
+                for (Argazki argazki : argazkis) {
+                    assert argazkilariMomentukoa != null;
+                    if(argazki.getIdArgazkilari() == argazkilariMomentukoa.getIdArgazkilari() && argazki.getData().before(selectedDate)){
+                        listModel.addElement(argazki);
+                    }
+                }
             }
         });
 
         jList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                String selectedImage = jList.getSelectedValue();
+                Argazki selectedImage = jList.getSelectedValue();
                 if (selectedImage != null) {
                     irudiaAldatu(selectedImage);
                 }
@@ -84,7 +100,10 @@ public class Photography extends JFrame {
         });
         irudiaLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-
+                Argazki selArgazki = jList.getSelectedValue();
+                if (selArgazki != null) {
+                    inkrementatuBistaratzeak(selArgazki);
+                }
             }
         });
     }
@@ -93,44 +112,17 @@ public class Photography extends JFrame {
         new Photography();
     }
 
-    public void argazkiakLortu(String selectedPhotographer) {
-        listModel.clear();
-        String url = "jdbc:mysql://localhost/Mugarri4";
-        String erab = "root";
-        String pasahitza = "zubiri";
-        try {
-            Connection conn = DriverManager.getConnection(url, erab, pasahitza);
-            String sql = "SELECT * FROM argazkiak WHERE idArgazkilari = ?;";
-            PreparedStatement kontsulta = conn.prepareStatement(sql);
-            String ida;
-            if (selectedPhotographer.equals("ansealdams")){
-                ida = "1";
-            } else if (selectedPhotographer.equals("rothko")) {
-                ida = "2";
-            }else {
-                ida = "3";
-            }
-            kontsulta.setString(1,ida);
-            ResultSet rs = kontsulta.executeQuery();
-            int kont = 0;
-            while (rs.next()) {
-                String izenburua = rs.getString("izenburua");
-                listModel.addElement(izenburua);
-            }
-
-            conn.close();
-        } catch (SQLException e) {
-            System.out.println("Konektatzerakoan errorea: " + e.getMessage());
-        }
-    }
-
-    private void irudiaAldatu(String imageName) {
-        String imagePath = "./irudiak/" + imageName + ".jpg";
+    private void irudiaAldatu(Argazki imageName) {
+        String imagePath = imageName.fitxategia;
         icon = new ImageIcon(imagePath);
         irudiaLabel.setIcon(icon);
 
     }
     public void inkrementatuBistaratzeak(Argazki a){
-        a.bistaratzeKop++;
+
+        int kop = a.getBistaratzeKop();
+        kop = kop + 1;
+        a.setBistaratzeKop(kop);
+        System.out.println(kop);
     }
 }
