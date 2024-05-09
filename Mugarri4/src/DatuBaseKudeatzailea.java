@@ -50,12 +50,13 @@ public class DatuBaseKudeatzailea {
         }
     }
     public ArrayList<Argazki> argazkiakLortu(){
-        ArrayList<Argazki> argazkiak = new ArrayList<>();
+
         try {
 
             String sql = "SELECT * FROM argazkiak;";
             Statement kontsulta = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             ResultSet rs = kontsulta.executeQuery(sql);
+            ArrayList<Argazki> argazkiak = new ArrayList<>();
             while (rs.next()){
                 Argazki argazki = new Argazki(rs.getInt(1),rs.getString(2),rs.getDate(3), rs.getString(4),rs.getInt(5),rs.getInt(6) );
                 argazkiak.add(argazki);
