@@ -16,8 +16,14 @@ public class DatuBaseKudeatzailea {
         }
 
     }
-    public void itxi() {
+    public void itxi(ArrayList<Argazki> argazkis) {
         try {
+            for (Argazki argazki : argazkis){
+                PreparedStatement statement = conn.prepareStatement("Update argazkiak set bistaratzeKop = ? where idArgazki = ?");
+                statement.setInt(1, argazki.bistaratzeKop);
+                statement.setInt(2, argazki.idArgazki);
+                statement.executeUpdate();
+            }
             conn.close();
             System.out.println("Datu-basetik deskonektatuta.");
         } catch (SQLException e) {
